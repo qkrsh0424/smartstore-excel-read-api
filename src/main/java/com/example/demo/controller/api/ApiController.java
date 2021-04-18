@@ -13,6 +13,7 @@ import java.util.Set;
 
 import com.example.demo.model.ExcelData;
 import com.example.demo.model.ExcelData2;
+import com.example.demo.model.Message;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -20,8 +21,11 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
@@ -34,8 +38,8 @@ public class ApiController {
     }
 
     @PostMapping(value = "/excel/read")
-    public void ReadExcelApi(@RequestParam("file") MultipartFile file) throws IOException {
-        List<ExcelData2> dataList = new ArrayList<>();
+    public ResponseEntity<?> ReadExcelApi(@RequestParam("file") MultipartFile file) throws IOException {
+         Message message = new Message();
 
         String extension = FilenameUtils.getExtension(file.getOriginalFilename()); // 3
 
@@ -53,7 +57,7 @@ public class ApiController {
 
         Sheet worksheet = workbook.getSheetAt(0);
 
-        dataList = getReadedExcel(worksheet);
+        List<ExcelData2> dataList = getReadedExcel(worksheet);
 
         // Set<String> prods = new HashSet<>();
         // for (ExcelData2 data : dataList) {
@@ -62,7 +66,30 @@ public class ApiController {
 
         // List<String> list = new ArrayList<>();
         // list.addAll(prods);
-        System.out.println(dataList);
+        // System.out.println(dataList);
+        message.setStatus(HttpStatus.OK);
+        message.setMessage("success");
+        message.setData(dataList);
+        return new ResponseEntity<>(message,HttpStatus.OK);
+    }
+
+    @PostMapping("/excel/assemble")
+    public void AssembleExcelApi(@RequestBody List<ExcelData2> dataList){
+        System.out.println(dataList.size());
+        Set<String> mySet = new HashSet<>();
+
+        for(ExcelData2 data : dataList){
+            StringBuilder sb = new StringBuilder();
+            sb.append(data.getReciever());
+            sb.append(data.getProdNo());
+            sb.append(data.getProdName());
+            sb.append(data.getOptionInfo());
+            sb.append(data.getDestination());
+
+            String resultString = sb.toString();
+            mySet.add(resultString);
+        }
+        System.out.println(mySet.size());
     }
 
     private List<ExcelData2> getReadedExcel(Sheet worksheet) {
