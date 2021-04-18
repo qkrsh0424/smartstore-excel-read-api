@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+</head>
+<body>
+    hello
+    <form id="excelForm">
+        <input type="file" id='i_excel'>
+        <button type="submit">submit</button>
+    </form>
+    <script>
+        
+        // $.ajax({
+        //     url:'/api/test',
+        //     type:'get',
+        //     contentType:'application/json',
+        //     dataType:'json',
+        //     success: function(res){
+        //         console.log(res)
+        //     },
+        //     error: function(err){
+        //         console.log(err);
+        //     }
+        // })
+
+        $('#excelForm').submit((e)=>{
+            e.preventDefault();
+            console.log($('#i_excel')[0].files[0])
+            var formData = new FormData();
+            formData.append('file', $('#i_excel')[0].files[0])
+
+
+            $.ajax({
+                url:'/api/excel/read',
+                type:'POST',
+                enctype: 'multipart/form-data',
+                contentType:false,
+                dataType:false,
+                processData: false,
+                data:formData,
+                success:function(res){
+                    console.log(res)
+                },
+                error:function(err){
+                    console.log(err);
+                }
+            })
+            console.log("submited");
+        })
+    </script>
+</body>
+</html>
