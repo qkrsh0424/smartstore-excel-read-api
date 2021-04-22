@@ -1,9 +1,32 @@
 package com.example.demo.model.sell.repository;
 
+import java.util.Date;
+import java.util.List;
+
 import com.example.demo.model.sell.entity.SellItemPureEntity;
+import com.example.demo.model.sell.proj.SellItemGroupProj;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface SellItemPureRepository extends JpaRepository<SellItemPureEntity, String>{
-    
+    /**
+     * String getProdNo();
+     * String getProdName();
+     * String getOptionInfo();
+     * int getUnitSum();
+     * int getShippingSum();
+     * int getAmountSum();
+     * @return
+     */
+    @Query(
+        "SELECT si.mallName AS mallName, si.prodNo AS prodNo, MAX(si.prodName) AS prodName, si.optionInfo AS optionInfo, SUM(si.unit) AS unitSum, SUM(si.shipping) AS shippingSum, SUM(si.amount) AS amountSum\n"+
+        "FROM SellItemPureEntity si\n"+
+        "WHERE si.mallName=:mallName\n"+
+        "GROUP BY si.mallName, si.prodNo, si.optionInfo"
+    )
+    List<SellItemGroupProj> selectGroupByProdNoAOptionInfo(String mallName);
+
+    @Query("SELECT si FROM SellItemPureEntity si WHERE (si.regDate BETWEEN :startDate AND :endDate) AND si.mallName=:mallName")
+    List<SellItemPureEntity> selectAllByMallADateRange(String mallName, Date startDate, Date endDate);
 }

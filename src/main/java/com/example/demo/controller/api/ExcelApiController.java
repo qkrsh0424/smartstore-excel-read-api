@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.example.demo.model.Message;
 import com.example.demo.model.sell.dto.SellRegReadDto;
-import com.example.demo.service.prod.ProdService;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -14,24 +13,19 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/v1/sell-item")
-public class ProdApiController {
-    @Autowired
-    ProdService prodService;
-
-    // /api/v1/sell-item/reg/excel/read
-    @PostMapping("/reg/excel/read")
+@RequestMapping("/api/excel")
+public class ExcelApiController {
+    // /api/excel/sell-items/read
+    @PostMapping("/sell-items/read")
     public ResponseEntity<Message> ProdExcelReadApi(@RequestParam("file") MultipartFile file) throws IOException{
         Message message = new Message();
 
@@ -68,6 +62,7 @@ public class ProdApiController {
             SellRegReadDto data = new SellRegReadDto();
 
             // System.out.println((int) row.getCell(20).getNumericCellValue());
+            data.setMallName("");
             data.setProdOrderNo(row.getCell(0).getStringCellValue());
             data.setOrderNo(row.getCell(1).getStringCellValue());
             data.setProdNo(row.getCell(15).getStringCellValue());
