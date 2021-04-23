@@ -17,4 +17,6 @@ public class SellItemGetDto {
     private int shipping; // 배송비합계 35(34)
     private int amount; // 정산예정금액 54(53)
     private Date regDate;
+    private Date cancelDate;
+    private Date confirmDate;
 }

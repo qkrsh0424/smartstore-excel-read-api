@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.example.demo.model.Message;
+import com.example.demo.model.sell.dto.SellCancelReadDto;
+import com.example.demo.model.sell.dto.SellConfirmReadDto;
 import com.example.demo.model.sell.dto.SellRegReadDto;
 
 import org.apache.commons.io.FilenameUtils;
@@ -26,7 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ExcelApiController {
     // /api/excel/sell-items/read
     @PostMapping("/sell-items/read")
-    public ResponseEntity<Message> ProdExcelReadApi(@RequestParam("file") MultipartFile file) throws IOException{
+    public ResponseEntity<Message> ProdExcelReadApi(@RequestParam("file") MultipartFile file) throws IOException {
         Message message = new Message();
 
         String extension = FilenameUtils.getExtension(file.getOriginalFilename()); // 3
@@ -44,18 +46,145 @@ public class ExcelApiController {
         }
 
         Sheet worksheet = workbook.getSheetAt(0);
-        List<SellRegReadDto> dtos = getReadedExcel(worksheet);
+        List<SellRegReadDto> dtos = getRegReadedExcel(worksheet);
 
         message.setMessage("success");
         message.setStatus(HttpStatus.OK);
         message.setData(dtos);
         return new ResponseEntity<>(message, HttpStatus.OK);
-        
+
     }
 
-    private List<SellRegReadDto> getReadedExcel(Sheet worksheet) {
+    // /api/excel/sell-cancel/read
+    @PostMapping("/sell-cancel/read")
+    public ResponseEntity<Message> readCanceledExcel(@RequestParam("file") MultipartFile file) throws IOException {
+        Message message = new Message();
+
+        String extension = FilenameUtils.getExtension(file.getOriginalFilename()); // 3
+
+        if (!extension.equals("xlsx") && !extension.equals("xls")) {
+            throw new IOException("엑셀파일만 업로드 해주세요.");
+        }
+
+        Workbook workbook = null;
+
+        if (extension.equals("xlsx")) {
+            workbook = new XSSFWorkbook(file.getInputStream());
+        } else if (extension.equals("xls")) {
+            workbook = new HSSFWorkbook(file.getInputStream());
+        }
+
+        Sheet worksheet = workbook.getSheetAt(0);
+        List<SellCancelReadDto> dtos = getCancelReadedExcel(worksheet);
+
+        message.setMessage("success");
+        message.setStatus(HttpStatus.OK);
+        message.setData(dtos);
+        return new ResponseEntity<>(message, HttpStatus.OK);
+
+    }
+
+    // /api/excel/sell-confirm/read
+    @PostMapping("/sell-confirm/read")
+    public ResponseEntity<Message> readConfirmedExcel(@RequestParam("file") MultipartFile file) throws IOException {
+        Message message = new Message();
+
+        String extension = FilenameUtils.getExtension(file.getOriginalFilename()); // 3
+
+        if (!extension.equals("xlsx") && !extension.equals("xls")) {
+            throw new IOException("엑셀파일만 업로드 해주세요.");
+        }
+
+        Workbook workbook = null;
+
+        if (extension.equals("xlsx")) {
+            workbook = new XSSFWorkbook(file.getInputStream());
+        } else if (extension.equals("xls")) {
+            workbook = new HSSFWorkbook(file.getInputStream());
+        }
+
+        Sheet worksheet = workbook.getSheetAt(0);
+        List<SellConfirmReadDto> dtos = getConfirmReadedExcel(worksheet);
+
+        message.setMessage("success");
+        message.setStatus(HttpStatus.OK);
+        message.setData(dtos);
+        return new ResponseEntity<>(message, HttpStatus.OK);
+
+    }
+
+    private List<SellConfirmReadDto> getConfirmReadedExcel(Sheet worksheet){
+        // private String mallName;
+        // private String prodOrderNo; // 1(0)
+        // private String orderNo; // 2(1)
+        // private String prodNo; // 14(13)
+        // private String prodName; // 15(14)
+        // private String optionInfo; // 17(16)
+        // private int unit; // 18(17)
+        // private int shipping; // 30(29)
+        // private int amount; // 41(40)
+        // private Date regDate; // 33(32)
+        // private Date confirmDate; // 3(2)
+        List<SellConfirmReadDto> dataList = new ArrayList<>();
+        for (int i = 1; i < worksheet.getPhysicalNumberOfRows(); i++) { // 4
+
+            Row row = worksheet.getRow(i);
+
+            SellConfirmReadDto data = new SellConfirmReadDto();
+
+            // System.out.println((int) row.getCell(20).getNumericCellValue());
+            data.setMallName("");
+            data.setProdOrderNo(row.getCell(0).getStringCellValue()); // 1(0)
+            data.setOrderNo(row.getCell(1).getStringCellValue()); // 2(1)
+            data.setProdNo(row.getCell(13).getStringCellValue()); // 14(13)
+            data.setProdName(row.getCell(14).getStringCellValue()); // 18(17)
+            data.setOptionInfo(row.getCell(16).getStringCellValue()); // 20(19)
+            data.setUnit((int) row.getCell(17).getNumericCellValue()); // 21(20)
+            data.setShipping((int) row.getCell(29).getNumericCellValue()); // 32(31)
+            data.setAmount((int) row.getCell(40).getNumericCellValue()); // 25(24)
+            data.setRegDate(row.getCell(32).getDateCellValue()); // 5(4)
+            data.setConfirmDate(row.getCell(2).getDateCellValue()); // 11(10)
+            dataList.add(data);
+        }
+        return dataList;
+    }
+
+    private List<SellCancelReadDto> getCancelReadedExcel(Sheet worksheet) {
+        List<SellCancelReadDto> dataList = new ArrayList<>();
+        for (int i = 1; i < worksheet.getPhysicalNumberOfRows(); i++) { // 4
+
+            Row row = worksheet.getRow(i);
+
+            SellCancelReadDto data = new SellCancelReadDto();
+
+            // System.out.println((int) row.getCell(20).getNumericCellValue());
+            data.setMallName("");
+            data.setProdOrderNo(row.getCell(0).getStringCellValue()); // 1(0)
+            data.setOrderNo(row.getCell(1).getStringCellValue()); // 2(1)
+            data.setProdNo(row.getCell(13).getStringCellValue()); // 14(13)
+            data.setProdName(row.getCell(17).getStringCellValue()); // 18(17)
+            data.setOptionInfo(row.getCell(19).getStringCellValue()); // 20(19)
+            data.setUnit((int) row.getCell(20).getNumericCellValue()); // 21(20)
+            data.setShipping((int) row.getCell(31).getNumericCellValue()); // 32(31)
+            data.setAmount((int) row.getCell(24).getNumericCellValue()); // 25(24)
+            data.setRegDate(row.getCell(4).getDateCellValue()); // 5(4)
+            data.setCancelDate(row.getCell(10).getDateCellValue()); // 11(10)
+            dataList.add(data);
+        }
+        return dataList;
+    }
+
+    private List<SellRegReadDto> getRegReadedExcel(Sheet worksheet) {
+        // private String mallName;
+        // private String prodOrderNo; // 상품주문번호 1(0)
+        // private String orderNo; // 주문번호 2(1)
+        // private String prodNo; // 상품번호 6(5)
+        // private String prodName; // 상품명 7(6)
+        // private String optionInfo; // 옵션정보 8(7)
+        // private int unit; // 수량 9(8)
+        // private Date regDate; // 주문일시 3(2)
         List<SellRegReadDto> dataList = new ArrayList<>();
-        for (int i = 2; i < worksheet.getPhysicalNumberOfRows(); i++) { // 4
+        for (int i = 1; i < worksheet.getPhysicalNumberOfRows(); i++) { // 4
 
             Row row = worksheet.getRow(i);
 
@@ -65,12 +194,13 @@ public class ExcelApiController {
             data.setMallName("");
             data.setProdOrderNo(row.getCell(0).getStringCellValue());
             data.setOrderNo(row.getCell(1).getStringCellValue());
-            data.setProdNo(row.getCell(15).getStringCellValue());
-            data.setProdName(row.getCell(16).getStringCellValue());
-            data.setOptionInfo(row.getCell(18).getStringCellValue());
-            data.setUnit((int) row.getCell(20).getNumericCellValue());
-            data.setShipping((int) row.getCell(34).getNumericCellValue());
-            data.setAmount((int) row.getCell(53).getNumericCellValue());
+            data.setProdNo(row.getCell(5).getStringCellValue());
+            data.setProdName(row.getCell(6).getStringCellValue());
+            data.setOptionInfo(row.getCell(7).getStringCellValue());
+            data.setUnit((int) row.getCell(8).getNumericCellValue());
+            // data.setShipping((int) row.getCell(34).getNumericCellValue());
+            // data.setAmount((int) row.getCell(53).getNumericCellValue());
+            data.setRegDate(row.getCell(2).getDateCellValue());
             dataList.add(data);
         }
         return dataList;

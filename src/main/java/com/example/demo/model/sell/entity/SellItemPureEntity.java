@@ -51,4 +51,8 @@ public class SellItemPureEntity {
     private int amount; // 정산예정금액 54(53)
     @Column(name = "reg_date")
     private Date regDate;
+    @Column(name="confirm_date")
+    private Date confirmDate;
+    @Column(name="confirmed")
+    private int confirmed;
 }
