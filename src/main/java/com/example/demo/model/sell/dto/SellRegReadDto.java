@@ -13,6 +13,7 @@ public class SellRegReadDto {
     private String prodName; // 상품명 7(6)
     private String optionInfo; // 옵션정보 8(7)
     private int unit; // 수량 9(8)
+    private String orderStatus;
     // private int shipping; // 배송비합계 35(34)
     // private int amount; // 정산예정금액 54(53)
     private Date regDate; // 주문일시 3(0)

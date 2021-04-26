@@ -24,10 +24,10 @@ public interface SellItemPureRepository extends JpaRepository<SellItemPureEntity
     @Query(
         "SELECT si.mallName AS mallName, si.prodNo AS prodNo, MAX(si.prodName) AS prodName, si.optionInfo AS optionInfo, SUM(si.unit) AS unitSum, SUM(si.shipping) AS shippingSum, SUM(si.amount) AS amountSum\n"+
         "FROM SellItemPureEntity si\n"+
-        "WHERE si.mallName=:mallName\n"+
+        "WHERE si.mallName=:mallName AND si.regDate BETWEEN :startDate AND :endDate\n"+
         "GROUP BY si.mallName, si.prodNo, si.optionInfo"
     )
-    List<SellItemGroupProj> selectGroupByProdNoAOptionInfo(String mallName);
+    List<SellItemGroupProj> selectGroupByProdNoAOptionInfo(String mallName, Date startDate, Date endDate);
 
     @Query("SELECT si FROM SellItemPureEntity si WHERE (si.regDate BETWEEN :startDate AND :endDate) AND si.mallName=:mallName")
     List<SellItemPureEntity> selectAllByMallADateRange(String mallName, Date startDate, Date endDate);

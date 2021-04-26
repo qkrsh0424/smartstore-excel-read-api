@@ -1,8 +1,12 @@
 package com.example.demo.controller.api;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.example.demo.model.Message;
 import com.example.demo.model.sell.dto.SellCancelReadDto;
@@ -113,7 +117,61 @@ public class ExcelApiController {
 
     }
 
-    private List<SellConfirmReadDto> getConfirmReadedExcel(Sheet worksheet){
+    // /api/excel/inflow/read
+    @PostMapping("/inflow/read")
+    public ResponseEntity<Message> readInflowExcel(@RequestParam("file") MultipartFile file) throws IOException {
+        Message message = new Message();
+
+        String extension = FilenameUtils.getExtension(file.getOriginalFilename()); // 3
+
+        if (!extension.equals("xlsx") && !extension.equals("xls")) {
+            throw new IOException("엑셀파일만 업로드 해주세요.");
+        }
+
+        Workbook workbook = null;
+
+        if (extension.equals("xlsx")) {
+            workbook = new XSSFWorkbook(file.getInputStream());
+        } else if (extension.equals("xls")) {
+            workbook = new HSSFWorkbook(file.getInputStream());
+        }
+
+        Sheet worksheet = workbook.getSheetAt(0);
+        // List<SellConfirmReadDto> dtos = getConfirmReadedExcel(worksheet);
+        List<Map> resultMap = getInflowReadedExcel(worksheet);
+        message.setMessage("success");
+        message.setStatus(HttpStatus.OK);
+        message.setData(resultMap);
+        return new ResponseEntity<>(message, HttpStatus.OK);
+
+    }
+
+    private List<Map> getInflowReadedExcel(Sheet worksheet) throws MalformedURLException {
+        List<Map> resultMaps = new ArrayList<>();
+        for (int i = 1; i < worksheet.getPhysicalNumberOfRows(); i++) {
+            Row row = worksheet.getRow(i);
+            Map<String, Object> resultMap = new HashMap();
+
+            URL aUrl = new URL(row.getCell(0).getStringCellValue());
+            if (aUrl.getHost().equals("m.smartstore.naver.com")) {
+                resultMap.put("deviceType", "모바일");
+            } else {
+                resultMap.put("deviceType", "PC");
+            }
+            String[] pathArr = aUrl.getPath().split("/");
+            if (pathArr.length == 4 && pathArr[2].equals("products")) {
+                resultMap.put("prodNo", pathArr[3]);
+                resultMap.put("pageUrl", row.getCell(0).getStringCellValue());
+                resultMap.put("pageView", row.getCell(1).getNumericCellValue());
+                resultMap.put("avgRegidenceTime", row.getCell(2).getStringCellValue());
+                resultMaps.add(resultMap);
+            }
+            
+        }
+        return resultMaps;
+    }
+
+    private List<SellConfirmReadDto> getConfirmReadedExcel(Sheet worksheet) {
         // private String mallName;
         // private String prodOrderNo; // 1(0)
         // private String orderNo; // 2(1)
@@ -163,7 +221,7 @@ public class ExcelApiController {
             data.setOrderNo(row.getCell(1).getStringCellValue()); // 2(1)
             data.setProdNo(row.getCell(13).getStringCellValue()); // 14(13)
             data.setProdName(row.getCell(17).getStringCellValue()); // 18(17)
-            data.setOptionInfo(row.getCell(19).getStringCellValue()); // 20(19)
+            data.setOptionInfo(row.getCell(19) != null ? row.getCell(19).getStringCellValue() : ""); // 20(19)
             data.setUnit((int) row.getCell(20).getNumericCellValue()); // 21(20)
             data.setShipping((int) row.getCell(31).getNumericCellValue()); // 32(31)
             data.setAmount((int) row.getCell(24).getNumericCellValue()); // 25(24)
@@ -196,12 +254,15 @@ public class ExcelApiController {
             data.setOrderNo(row.getCell(1).getStringCellValue());
             data.setProdNo(row.getCell(5).getStringCellValue());
             data.setProdName(row.getCell(6).getStringCellValue());
-            data.setOptionInfo(row.getCell(7).getStringCellValue());
+            data.setOptionInfo(row.getCell(7) != null ? row.getCell(7).getStringCellValue() : "");
             data.setUnit((int) row.getCell(8).getNumericCellValue());
+            data.setOrderStatus(row.getCell(3).getStringCellValue());
             // data.setShipping((int) row.getCell(34).getNumericCellValue());
             // data.setAmount((int) row.getCell(53).getNumericCellValue());
             data.setRegDate(row.getCell(2).getDateCellValue());
-            dataList.add(data);
+            if (!data.getOrderStatus().equals("미결제취소")) {
+                dataList.add(data);
+            }
         }
         return dataList;
     }

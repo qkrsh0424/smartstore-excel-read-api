@@ -1,9 +1,12 @@
 package com.example.demo.controller.api;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.example.demo.model.Message;
 import com.example.demo.model.sell.dto.SellItemGetDto;
@@ -95,12 +98,38 @@ public class SellItemApiController {
 
     // /api/sell-item/summary : GET
     @GetMapping("/summary")
-    public ResponseEntity<Message> showSummary(@RequestParam("mallName") String mallName) throws IOException {
+    public ResponseEntity<Message> showSummary(@RequestParam("mallName") String mallName, @RequestParam("startDate") Date startDate, @RequestParam("endDate") Date endDate) throws IOException {
         Message message = new Message();
 
+        // URL aUrl = new URL("https://m.smartstore.naver.com/1heart/products/5430150125");
+        URL aUrl = new URL("https://m.smartstore.naver.com/1heart");
+        System.out.println("protocol = " + aUrl.getProtocol());
+        System.out.println("authority = " + aUrl.getAuthority());
+        System.out.println("host = " + aUrl.getHost());
+        System.out.println("port = " + aUrl.getPort());
+        System.out.println("path = " + aUrl.getPath());
+        System.out.println("query = " + aUrl.getQuery());
+        System.out.println("filename = " + aUrl.getFile());
+        System.out.println("ref = " + aUrl.getRef());
+        Map<String, String> inflow = new HashMap<>();
+
+        if(aUrl.getHost().equals("m.smartstore.naver.com")){
+            
+            inflow.put("deviceType", "모바일");
+        }else{
+            inflow.put("deviceType", "PC");
+        }
+
+        String[] pathArr = aUrl.getPath().split("/");
+        for(int i = 0 ; i < pathArr.length; i++){
+            System.out.println(pathArr[i]);
+        }
+        if(pathArr.length > 4 && pathArr[2].equals("products")){
+            System.out.println("helo");
+        }
         message.setMessage("success");
         message.setStatus(HttpStatus.OK);
-        message.setData(prodService.getSellItemsSummaryService(mallName));
+        message.setData(prodService.getSellItemsSummaryService(mallName, startDate, endDate));
         return new ResponseEntity<>(message, HttpStatus.OK);
 
     }

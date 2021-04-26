@@ -1,6 +1,7 @@
 package com.example.demo.service.prod;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -92,10 +93,10 @@ public class ProdService {
         return false;
     }
 
-    public List<SellItemSummaryGetDto> getSellItemsSummaryService(String mallName) {
+    public List<SellItemSummaryGetDto> getSellItemsSummaryService(String mallName, Date startDate, Date endDate) {
         List<SellItemSummaryGetDto> dtos = new ArrayList<>();
 
-        for (SellItemGroupProj proj : prodOrderPureRepository.selectGroupByProdNoAOptionInfo(mallName)) {
+        for (SellItemGroupProj proj : prodOrderPureRepository.selectGroupByProdNoAOptionInfo(mallName, startDate, endDate)) {
             SellItemSummaryGetDto dto = new SellItemSummaryGetDto();
             dto.setMallName(proj.getMallName());
             dto.setProdNo(proj.getProdNo());
