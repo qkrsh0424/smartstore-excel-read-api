@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.example.demo.model.Message;
+import com.example.demo.model.orderManage.OrderManageDto;
 import com.example.demo.model.sell.dto.SellCancelReadDto;
 import com.example.demo.model.sell.dto.SellConfirmReadDto;
 import com.example.demo.model.sell.dto.SellRegReadDto;
+import com.example.demo.service.orderManage.OrderManageService;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -19,6 +21,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +33,9 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/excel")
 public class ExcelApiController {
+    @Autowired
+    OrderManageService orderManageService;
+
     // /api/excel/sell-items/read
     @PostMapping("/sell-items/read")
     public ResponseEntity<Message> ProdExcelReadApi(@RequestParam("file") MultipartFile file) throws IOException {
@@ -142,6 +148,34 @@ public class ExcelApiController {
         message.setMessage("success");
         message.setStatus(HttpStatus.OK);
         message.setData(resultMap);
+        return new ResponseEntity<>(message, HttpStatus.OK);
+
+    }
+
+    // /api/excel/order-manage/read
+    @PostMapping("/order-manage/read")
+    public ResponseEntity<Message> readOrderManageExcel(@RequestParam("file") MultipartFile file) throws IOException {
+        Message message = new Message();
+
+        String extension = FilenameUtils.getExtension(file.getOriginalFilename()); // 3
+
+        if (!extension.equals("xlsx") && !extension.equals("xls")) {
+            throw new IOException("엑셀파일만 업로드 해주세요.");
+        }
+
+        Workbook workbook = null;
+
+        if (extension.equals("xlsx")) {
+            workbook = new XSSFWorkbook(file.getInputStream());
+        } else if (extension.equals("xls")) {
+            workbook = new HSSFWorkbook(file.getInputStream());
+        }
+
+        Sheet worksheet = workbook.getSheetAt(0);
+        List<OrderManageDto> orderManageDtos = orderManageService.getReadExcel(worksheet);
+        message.setMessage("success");
+        message.setStatus(HttpStatus.OK);
+        message.setData(orderManageDtos);
         return new ResponseEntity<>(message, HttpStatus.OK);
 
     }
